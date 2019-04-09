@@ -1,3 +1,40 @@
+/*
+Package ofs provides a primitive overlay FileSystem compatible with go/http.
+It has some write support and transparent zip file access (read-only).
+
+For example, suppose we have an assets directory:
+
+	assets/
+		shaders/
+			basic.glsl
+		sprites/
+			gear.png
+
+The application will be shipped as an executable along with the assets packaged
+in a single zip file assets.zip. We also want transparent modding support, so
+we use an overlay filesystem that will look for files in the mods/assets
+directory then fallback to the assets.zip archive:
+
+	var ovl ofs.Overlay
+	err := ovl.Add(false, "assets.zip", "mods")
+	shader, err := ovl.Open("assets/shaders/basic.glsl")
+
+The file "assets/shaders/basic.glsl" will be looked up in "mods/assets/shaders/basic.glsl"
+then "assets/shaders/basic.glsl" within the assets.zip file.
+
+One could also add a local cache directory on top of the overlay for all write
+operations:
+
+	// fallback to some temp dir if any of these fail
+	cache, err := os.UserCacheDir()
+	cache = filepath.Join(cache, "myApp")
+	err = os.MkDir(cache)
+	err = ovl.Add(true, cache)
+
+Note that there is no support to remove files. However, the Overlay FileSystem
+does not cache any information, client code can therefore use regular os calls
+to remove files without interference with the overlay.
+*/
 package ofs
 
 import (
@@ -13,19 +50,28 @@ import (
 // Overlay is a primitive overlay FileSystem. Add directories or zip files to the overlay with
 // the Add method.
 //
-// There is no support for renaming or deleting files. The main reason to support file Creation
-// is to implement file caches on top of the overlay.
-//
 type Overlay struct {
 	fs []FileSystem
 	dm map[string]int
 }
 
-// Add adds the named directories to the overlay. The last directory added takes precedence.
-// Paths are expected to use the host os' separators (i.e. os.PathSeparator).
+// Add adds the named directories to the overlay. The last directory added takes
+// precedence.
 //
-// A dir can also be a zip archive. However, this will be a read-only FileSystem and any File
-// returned by Open will be read-only and not seek-able.
+// A dir can also be a zip archive. However, this will be a read-only FileSystem
+// and any File returned by Open will be read-only and not seek-able.
+//
+// While the FileSystem.Open method takes '/'-separated paths, dir string values
+// are filenames on the native file system, so it is separated by
+// filepath.Separator, which isn't necessarily '/'.
+//
+// In order to allow client code to safely call os.Chdir without interference,
+// Overlay only keeps track of absolute paths. When a directory is added to the
+// overlay, non-absolute paths are resolved relative to the path of executable
+// first, then in the current directory.
+//
+// Add will silently ignore non-existing directories if mustExist is false, and
+// Open and Create will never look for files in these.
 //
 func (o *Overlay) Add(mustExist bool, dirs ...string) error {
 	if o.dm == nil {
