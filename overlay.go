@@ -39,7 +39,6 @@ package ofs
 
 import (
 	"archive/zip"
-	"log"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -91,12 +90,10 @@ func (o *Overlay) Add(mustExist bool, dirs ...string) error {
 		}
 		// for relative paths, try exec directory first
 		if !filepath.IsAbs(dir) && exeDir != "" {
-			log.Printf("OverlayFS: %q: trying %q", dir, filepath.Join(exeDir, dir))
 			err = o.Add(true, filepath.Join(exeDir, dir))
 			if err == nil {
 				continue
 			}
-			log.Printf("OverlayFS: %q: trying %q", dir, abs)
 		}
 
 		// skip if this resolves to an existing dir
@@ -124,7 +121,6 @@ func (o *Overlay) Add(mustExist bool, dirs ...string) error {
 		}
 		o.dm[abs] = len(o.fs)
 		o.fs = append(o.fs, fs)
-		log.Printf("Overlay FS: added %q", abs)
 	}
 	return nil
 }
@@ -132,7 +128,11 @@ func (o *Overlay) Add(mustExist bool, dirs ...string) error {
 // Open implements FileSystem.Open.
 //
 func (o *Overlay) Open(name string) (File, error) {
-	for i := len(o.fs) - 1; i >= 0; i-- {
+	i := len(o.fs)
+	if i == 0 {
+		return nil, &os.PathError{Op: "open", Path: name, Err: errors.Errorf("ofs: no filesystems configured")}
+	}
+	for i = i - 1; i >= 0; i-- {
 		f, err := o.fs[i].Open(name)
 		if err != nil {
 			if os.IsNotExist(err) {
@@ -148,5 +148,8 @@ func (o *Overlay) Open(name string) (File, error) {
 // Create implements FileSystem.Create.
 //
 func (o *Overlay) Create(name string) (File, error) {
-	return nil, os.ErrPermission
+	if i := len(o.fs) - 1; i >= 0 {
+		return o.fs[i].Create(name)
+	}
+	return nil, &os.PathError{Op: "create", Path: name, Err: errors.Errorf("ofs: no filesystems configured")}
 }

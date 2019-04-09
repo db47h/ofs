@@ -49,5 +49,5 @@ func (d Dir) Create(name string) (File, error) {
 	if err := d.check(name); err != nil {
 		return nil, err
 	}
-	return os.Create(filepath.Join(string(d), filepath.FromSlash(name)))
+	return os.Create(filepath.Join(string(d), filepath.FromSlash(path.Clean("/"+name))))
 }
