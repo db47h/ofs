@@ -1,3 +1,7 @@
+// Copyright 2019 Denis Bernard <db047h@gmail.com>
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
+
 /*
 Package ofs provides a primitive overlay FileSystem compatible with go/http.
 It has some write support and transparent zip file access (read-only).
