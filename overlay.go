@@ -50,12 +50,33 @@ import (
 	"github.com/pkg/errors"
 )
 
+var exeDir string
+
+func init() {
+	// try to get real path of executable
+	exec, err := os.Executable()
+	if err != nil {
+		// fallback to os.Args
+		exec, err = os.Readlink(os.Args[0])
+	}
+	if err != nil {
+		return
+	}
+	exeDir, err = filepath.Abs(exec)
+	if err != nil {
+		exeDir = ""
+	}
+}
+
 // Overlay is a primitive overlay FileSystem. Add directories or zip files to the overlay with
 // the Add method.
 //
 type Overlay struct {
-	fs []FileSystem
-	dm map[string]int
+	// If ResolveExecDir is true, Add will try to resolve non-absolute paths
+	// relative to the path of the executable before trying the current directory.
+	ResolveExecDir bool
+	fs             []FileSystem
+	dm             map[string]int
 }
 
 // Add adds the named directories to the overlay. The last directory added takes
@@ -71,7 +92,7 @@ type Overlay struct {
 // In order to allow client code to safely call os.Chdir without interference,
 // Overlay only keeps track of absolute paths. When a directory is added to the
 // overlay, non-absolute paths are resolved relative to the path of executable
-// first, then in the current directory.
+// first if ResolveRelative, then in the current directory.
 //
 // Add will silently ignore non-existing directories if mustExist is false, and
 // Open and Create will never look for files in these.
@@ -79,11 +100,6 @@ type Overlay struct {
 func (o *Overlay) Add(mustExist bool, dirs ...string) error {
 	if o.dm == nil {
 		o.dm = make(map[string]int)
-	}
-	exeDir := filepath.Dir(os.Args[0])
-	exeDir, err := filepath.Abs(exeDir)
-	if err != nil {
-		exeDir = ""
 	}
 	for _, dir := range dirs {
 		dir = filepath.Clean(dir)
@@ -93,7 +109,7 @@ func (o *Overlay) Add(mustExist bool, dirs ...string) error {
 			return errors.Wrapf(err, "failed to get absolute path for %q", dir)
 		}
 		// for relative paths, try exec directory first
-		if !filepath.IsAbs(dir) && exeDir != "" {
+		if o.ResolveExecDir && !filepath.IsAbs(dir) && exeDir != "" {
 			err = o.Add(true, filepath.Join(exeDir, dir))
 			if err == nil {
 				continue

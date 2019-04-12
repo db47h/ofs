@@ -36,13 +36,7 @@ func Test_Overlay(t *testing.T) {
 		t.Fatal("failed to create temp dir:", err)
 	}
 
-	// TODO: there is a problem with using "." for current dir since
-	// it will take the current directory of the executable (for tests, somewhere under /tmp)
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Fatal("failed to get current directory:", err)
-	}
-	err = ovl.Add(true, "testdata.zip", wd, tmp)
+	err = ovl.Add(true, "testdata.zip", ".", tmp)
 	if err != nil {
 		t.Fatal("failed to create overlay:", err)
 	}
