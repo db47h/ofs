@@ -1,5 +1,3 @@
-
-
 # ofs
 `import "github.com/db47h/ofs"`
 
@@ -69,7 +67,7 @@ to remove files without interference with the overlay.
 
 
 
-## <a name="Dir">type</a> [Dir](/src/target/dir.go?s=658:673#L23)
+## <a name="Dir">type</a> [Dir](/src/target/dir.go?s=814:829#L27)
 ``` go
 type Dir string
 ```
@@ -93,7 +91,7 @@ first non-existing directory when Open or Create fails.
 
 
 
-### <a name="Dir.Create">func</a> (Dir) [Create](/src/target/dir.go?s=1362:1408#L48)
+### <a name="Dir.Create">func</a> (Dir) [Create](/src/target/dir.go?s=1518:1564#L52)
 ``` go
 func (d Dir) Create(name string) (File, error)
 ```
@@ -102,7 +100,7 @@ Create implements FileSystem.Create.
 
 
 
-### <a name="Dir.Open">func</a> (Dir) [Open](/src/target/dir.go?s=1125:1169#L39)
+### <a name="Dir.Open">func</a> (Dir) [Open](/src/target/dir.go?s=1281:1325#L43)
 ``` go
 func (d Dir) Open(name string) (File, error)
 ```
@@ -111,7 +109,7 @@ Open implements FileSystem.Open.
 
 
 
-## <a name="File">type</a> [File](/src/target/fs.go?s=169:308#L12)
+## <a name="File">type</a> [File](/src/target/fs.go?s=325:464#L16)
 ``` go
 type File interface {
     io.Closer
@@ -135,7 +133,7 @@ The methods should behave the same as those on an *os.File.
 
 
 
-## <a name="FileSystem">type</a> [FileSystem](/src/target/fs.go?s=623:720#L28)
+## <a name="FileSystem">type</a> [FileSystem](/src/target/fs.go?s=779:876#L32)
 ``` go
 type FileSystem interface {
     Open(name string) (File, error)
@@ -158,9 +156,12 @@ and Open("/foo").
 
 
 
-## <a name="Overlay">type</a> [Overlay](/src/target/overlay.go?s=1525:1584#L53)
+## <a name="Overlay">type</a> [Overlay](/src/target/overlay.go?s=1959:2217#L74)
 ``` go
 type Overlay struct {
+    // If ResolveExecDir is true, Add will try to resolve non-absolute paths
+    // relative to the path of the executable before trying the current directory.
+    ResolveExecDir bool
     // contains filtered or unexported fields
 }
 ```
@@ -176,7 +177,7 @@ the Add method.
 
 
 
-### <a name="Overlay.Add">func</a> (\*Overlay) [Add](/src/target/overlay.go?s=2461:2520#L76)
+### <a name="Overlay.Add">func</a> (\*Overlay) [Add](/src/target/overlay.go?s=3113:3172#L100)
 ``` go
 func (o *Overlay) Add(mustExist bool, dirs ...string) error
 ```
@@ -193,7 +194,7 @@ filepath.Separator, which isn't necessarily '/'.
 In order to allow client code to safely call os.Chdir without interference,
 Overlay only keeps track of absolute paths. When a directory is added to the
 overlay, non-absolute paths are resolved relative to the path of executable
-first, then in the current directory.
+first if ResolveRelative, then in the current directory.
 
 Add will silently ignore non-existing directories if mustExist is false, and
 Open and Create will never look for files in these.
@@ -201,7 +202,7 @@ Open and Create will never look for files in these.
 
 
 
-### <a name="Overlay.Create">func</a> (\*Overlay) [Create](/src/target/overlay.go?s=4237:4288#L150)
+### <a name="Overlay.Create">func</a> (\*Overlay) [Create](/src/target/overlay.go?s=4762:4813#L170)
 ``` go
 func (o *Overlay) Create(name string) (File, error)
 ```
@@ -210,7 +211,7 @@ Create implements FileSystem.Create.
 
 
 
-### <a name="Overlay.Open">func</a> (\*Overlay) [Open](/src/target/overlay.go?s=3892:3941#L134)
+### <a name="Overlay.Open">func</a> (\*Overlay) [Open](/src/target/overlay.go?s=4288:4337#L150)
 ``` go
 func (o *Overlay) Open(name string) (File, error)
 ```
