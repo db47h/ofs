@@ -1,4 +1,15 @@
+[godoc]: https://godoc.org/github.com/db47h/ofs
+[godoc-img]: https://godoc.org/github.com/db47h/ofs?status.svg
+[goreport]: https://goreportcard.com/report/github.com/db47h/ofs
+[goreport-img]: https://goreportcard.com/badge/github.com/db47h/ofs
+[license]: https://img.shields.io/github/license/db47h/ofs.svg
+
 # ofs
+
+[![GoDoc][godoc-img]][godoc]
+[![GoReportCard][goreport-img]][goreport]
+![MIT License][license]
+
 `import "github.com/db47h/ofs"`
 
 * [Overview](#pkg-overview)
