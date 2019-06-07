@@ -57,7 +57,7 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 var exeDir string
@@ -116,7 +116,7 @@ func (o *Overlay) Add(mustExist bool, dirs ...string) error {
 		abs, err := filepath.Abs(dir)
 		// sanitize and resolve to an actual full path
 		if err != nil {
-			return errors.Wrapf(err, "failed to get absolute path for %q", dir)
+			return xerrors.Errorf("failed to get absolute path for %q: %w", dir, err)
 		}
 		// for relative paths, try exec directory first
 		if o.ResolveExecDir && !filepath.IsAbs(dir) && exeDir != "" {
@@ -136,7 +136,7 @@ func (o *Overlay) Add(mustExist bool, dirs ...string) error {
 			if !mustExist && os.IsNotExist(err) {
 				continue
 			}
-			return errors.Wrapf(err, "failed to stat %q", dir)
+			return xerrors.Errorf("failed to stat %q: %w", dir, err)
 		}
 		var fs FileSystem
 		if !fi.IsDir() {
@@ -160,7 +160,7 @@ func (o *Overlay) Add(mustExist bool, dirs ...string) error {
 func (o *Overlay) Open(name string) (File, error) {
 	i := len(o.fs)
 	if i == 0 {
-		return nil, &os.PathError{Op: "open", Path: name, Err: errors.Errorf("ofs: no filesystems configured")}
+		return nil, &os.PathError{Op: "open", Path: name, Err: xerrors.New("ofs: no filesystems configured")}
 	}
 	for i = i - 1; i >= 0; i-- {
 		f, err := o.fs[i].Open(name)
@@ -181,5 +181,5 @@ func (o *Overlay) Create(name string) (File, error) {
 	if i := len(o.fs) - 1; i >= 0 {
 		return o.fs[i].Create(name)
 	}
-	return nil, &os.PathError{Op: "create", Path: name, Err: errors.Errorf("ofs: no filesystems configured")}
+	return nil, &os.PathError{Op: "create", Path: name, Err: xerrors.New("ofs: no filesystems configured")}
 }

@@ -20,7 +20,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 type zipArchive struct {
@@ -86,7 +86,7 @@ func (a *zipArchive) Open(name string) (File, error) {
 			}
 			p, ok := a.fm[d]
 			if !ok {
-				return nil, errors.Errorf("parent folder entry %q not found for %q", d, name)
+				return nil, xerrors.Errorf("parent folder entry %q not found for %q", d, name)
 			}
 			p.files = append(p.files, f)
 		}

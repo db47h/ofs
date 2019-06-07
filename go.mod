@@ -2,4 +2,4 @@ module github.com/db47h/ofs
 
 go 1.12
 
-require github.com/pkg/errors v0.8.1
+require golang.org/x/xerrors v0.0.0-20190513163551-3ee3066db522

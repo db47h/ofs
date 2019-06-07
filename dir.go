@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 // A Dir implements FileSystem using the native file system restricted to a
@@ -39,11 +39,11 @@ type Dir string
 func (d Dir) check(name string) error {
 	// error if dir is not absolute
 	if dir := string(d); !filepath.IsAbs(dir) {
-		return errors.Errorf("ofs: dir is not absolute %q", dir)
+		return xerrors.Errorf("ofs: dir is not absolute %q", dir)
 	}
 	// error if using local os' path separators instead of '/'
 	if filepath.Separator != '/' && strings.ContainsRune(name, filepath.Separator) {
-		return errors.Errorf("ofs: invalid character in file path %q", name)
+		return xerrors.Errorf("ofs: invalid character in file path %q", name)
 	}
 	return nil
 }
