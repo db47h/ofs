@@ -9,7 +9,7 @@ import (
 // This example demonstrates how to use a FileSystem as an http.FileSystem
 // with a simple wrapper.
 //
-func ExampleOverlay_httpFileSystem() {
+func ExampleFileSystem_http() {
 	var (
 		ovl = new(ofs.Overlay)
 		httpFS = &httpFileSystem{ovl}
