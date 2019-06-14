@@ -13,37 +13,42 @@
 // THIS SOFTWARE.
 
 /*
-Package ofs provides a primitive overlay FileSystem compatible with go/http.
-It has some write support and transparent zip file access (read-only).
+Package ofs provides a primitive overlay FileSystem compatible with go/http. It
+has some write support and transparent zip file access (read-only).
+
+This was designed primarily to handle asset loading where we want transpartent
+support for patches and mods. For those looking for something more advanced,
+there's https://github.com/spf13/afero/.
 
 For example, suppose we have an assets directory:
 
-	assets/
-		shaders/
-			basic.glsl
-		sprites/
-			gear.png
+    assets/
+        shaders/
+            basic.glsl
+        sprites/
+            gear.png
 
 The application will be shipped as an executable along with the assets packaged
-in a single zip file assets.zip. We also want transparent modding support, so
-we use an overlay filesystem that will look for files in the mods/assets
-directory then fallback to the assets.zip archive:
+in a single zip file assets.zip. We also want transparent modding support, so we
+use an overlay filesystem that will look for files in the mods/assets directory
+then fallback to the assets.zip archive:
 
-	var ovl ofs.Overlay
-	err := ovl.Add(false, "assets.zip", "mods")
-	shader, err := ovl.Open("assets/shaders/basic.glsl")
+    var ovl ofs.Overlay
+    err := ovl.Add(false, "assets.zip", "mods")
+    shader, err := ovl.Open("assets/shaders/basic.glsl")
 
-The file "assets/shaders/basic.glsl" will be looked up in "mods/assets/shaders/basic.glsl"
-then "assets/shaders/basic.glsl" within the assets.zip file.
+The file "assets/shaders/basic.glsl" will be looked up in
+"mods/assets/shaders/basic.glsl" then "assets/shaders/basic.glsl" within the
+assets.zip file.
 
 One could also add a local cache directory on top of the overlay for all write
 operations:
 
-	// fallback to some temp dir if any of these fail
-	cache, err := os.UserCacheDir()
-	cache = filepath.Join(cache, "myApp")
-	err = os.MkDir(cache)
-	err = ovl.Add(true, cache)
+    // fallback to some temp dir if any of these fail
+    cache, err := os.UserCacheDir()
+    cache = filepath.Join(cache, "myApp")
+    err = os.MkDir(cache)
+    err = ovl.Add(true, cache)
 
 Note that there is no support to remove files. However, the Overlay FileSystem
 does not cache any information, client code can therefore use regular os calls

@@ -11,39 +11,40 @@
 ![MIT License][license]
 
 `import "github.com/db47h/ofs"`
-
 * [Overview](#pkg-overview)
 * [Index](#pkg-index)
 
 ## <a name="pkg-overview">Overview</a>
-Package ofs provides a primitive overlay FileSystem compatible with go/http.
-It has some write support and transparent zip file access (read-only).
+Package ofs provides a primitive overlay FileSystem compatible with go/http. It
+has some write support and transparent zip file access (read-only).
+
+This was designed primarily to handle asset loading where we want transpartent
+support for patches and mods. For those looking for something more advanced,
+there's <a href="https://github.com/spf13/afero/">https://github.com/spf13/afero/</a>.
 
 For example, suppose we have an assets directory:
 
-
 	assets/
-		shaders/
-			basic.glsl
-		sprites/
-			gear.png
+	    shaders/
+	        basic.glsl
+	    sprites/
+	        gear.png
 
 The application will be shipped as an executable along with the assets packaged
-in a single zip file assets.zip. We also want transparent modding support, so
-we use an overlay filesystem that will look for files in the mods/assets
-directory then fallback to the assets.zip archive:
-
+in a single zip file assets.zip. We also want transparent modding support, so we
+use an overlay filesystem that will look for files in the mods/assets directory
+then fallback to the assets.zip archive:
 
 	var ovl ofs.Overlay
 	err := ovl.Add(false, "assets.zip", "mods")
 	shader, err := ovl.Open("assets/shaders/basic.glsl")
 
-The file "assets/shaders/basic.glsl" will be looked up in "mods/assets/shaders/basic.glsl"
-then "assets/shaders/basic.glsl" within the assets.zip file.
+The file "assets/shaders/basic.glsl" will be looked up in
+"mods/assets/shaders/basic.glsl" then "assets/shaders/basic.glsl" within the
+assets.zip file.
 
 One could also add a local cache directory on top of the overlay for all write
 operations:
-
 
 	// fallback to some temp dir if any of these fail
 	cache, err := os.UserCacheDir()
@@ -54,9 +55,6 @@ operations:
 Note that there is no support to remove files. However, the Overlay FileSystem
 does not cache any information, client code can therefore use regular os calls
 to remove files without interference with the overlay.
-
-
-
 
 ## <a name="pkg-index">Index</a>
 * [type Dir](#Dir)
@@ -69,16 +67,11 @@ to remove files without interference with the overlay.
   * [func (o *Overlay) Create(name string) (File, error)](#Overlay.Create)
   * [func (o *Overlay) Open(name string) (File, error)](#Overlay.Open)
 
-
 #### <a name="pkg-files">Package files</a>
 [dir.go](/src/target/dir.go) [fs.go](/src/target/fs.go) [overlay.go](/src/target/overlay.go) [zip.go](/src/target/zip.go) 
 
 
-
-
-
-
-## <a name="Dir">type</a> [Dir](/src/target/dir.go?s=814:829#L27)
+## <a name="Dir">type</a> [Dir](/src/target/dir.go?s=1441:1456#L37)
 ``` go
 type Dir string
 ```
@@ -102,7 +95,7 @@ first non-existing directory when Open or Create fails.
 
 
 
-### <a name="Dir.Create">func</a> (Dir) [Create](/src/target/dir.go?s=1518:1564#L52)
+### <a name="Dir.Create">func</a> (Dir) [Create](/src/target/dir.go?s=2147:2193#L62)
 ``` go
 func (d Dir) Create(name string) (File, error)
 ```
@@ -111,7 +104,7 @@ Create implements FileSystem.Create.
 
 
 
-### <a name="Dir.Open">func</a> (Dir) [Open](/src/target/dir.go?s=1281:1325#L43)
+### <a name="Dir.Open">func</a> (Dir) [Open](/src/target/dir.go?s=1910:1954#L53)
 ``` go
 func (d Dir) Open(name string) (File, error)
 ```
@@ -120,7 +113,7 @@ Open implements FileSystem.Open.
 
 
 
-## <a name="File">type</a> [File](/src/target/fs.go?s=325:464#L16)
+## <a name="File">type</a> [File](/src/target/fs.go?s=953:1092#L26)
 ``` go
 type File interface {
     io.Closer
@@ -144,7 +137,7 @@ The methods should behave the same as those on an *os.File.
 
 
 
-## <a name="FileSystem">type</a> [FileSystem](/src/target/fs.go?s=779:876#L32)
+## <a name="FileSystem">type</a> [FileSystem](/src/target/fs.go?s=1407:1504#L42)
 ``` go
 type FileSystem interface {
     Open(name string) (File, error)
@@ -167,7 +160,7 @@ and Open("/foo").
 
 
 
-## <a name="Overlay">type</a> [Overlay](/src/target/overlay.go?s=1959:2217#L74)
+## <a name="Overlay">type</a> [Overlay](/src/target/overlay.go?s=2841:3099#L89)
 ``` go
 type Overlay struct {
     // If ResolveExecDir is true, Add will try to resolve non-absolute paths
@@ -188,7 +181,7 @@ the Add method.
 
 
 
-### <a name="Overlay.Add">func</a> (\*Overlay) [Add](/src/target/overlay.go?s=3113:3172#L100)
+### <a name="Overlay.Add">func</a> (\*Overlay) [Add](/src/target/overlay.go?s=3995:4054#L115)
 ``` go
 func (o *Overlay) Add(mustExist bool, dirs ...string) error
 ```
@@ -213,7 +206,7 @@ Open and Create will never look for files in these.
 
 
 
-### <a name="Overlay.Create">func</a> (\*Overlay) [Create](/src/target/overlay.go?s=4762:4813#L170)
+### <a name="Overlay.Create">func</a> (\*Overlay) [Create](/src/target/overlay.go?s=5654:5705#L185)
 ``` go
 func (o *Overlay) Create(name string) (File, error)
 ```
@@ -222,7 +215,7 @@ Create implements FileSystem.Create.
 
 
 
-### <a name="Overlay.Open">func</a> (\*Overlay) [Open](/src/target/overlay.go?s=4288:4337#L150)
+### <a name="Overlay.Open">func</a> (\*Overlay) [Open](/src/target/overlay.go?s=5182:5231#L165)
 ``` go
 func (o *Overlay) Open(name string) (File, error)
 ```
